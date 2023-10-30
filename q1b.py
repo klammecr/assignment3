@@ -4,7 +4,7 @@ import argparse
 import cv2
 
 # In House
-from q1a import normalize_pts
+from q1a import normalize_pts, draw_epipolar_lines
 
 def calc_F_seven(pts1, pts2):
     # Step 1: Normalize Points
@@ -75,6 +75,8 @@ def main(img1_file, img2_file, intr_file, corr_file, precise_corr, out_dir):
 
     # Compute seven point algorithm
     F_list = calc_F_seven(pts1_precise, pts2_precise)
+
+    draw_epipolar_lines(img1, img2, F_list[0], pts1_precise, pts2_precise, f"{out_dir}/F_epipolar_seven_point.png", show_lines=True)
 
     # DEBUG: Check F
     for i in range(pts1.shape[0]):

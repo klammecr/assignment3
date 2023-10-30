@@ -124,8 +124,10 @@ def draw_epipolar_lines(img1, img2, F, pts1, pts2, out_fp, show_lines=False):
         i+=1
 
     # Display result
-    cv2.putText(out_im1, "View 1 with Point Annotations", (w1//2, 20), cv2.FONT_HERSHEY_COMPLEX,1, (255, 255, 255))
-    cv2.putText(out_im2, "View 2 with Epipolar Lines", (w2//2, 20), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255))
+    cv2.putText(out_im1, "View 1 with Point Annotations", (0, 20), cv2.FONT_HERSHEY_COMPLEX,1, (255, 255, 255))
+    # cv2.imshow("f", out_im1)
+    # cv2.waitKey()
+    cv2.putText(out_im2, "View 2 with Epipolar Lines", (0, 20), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255))
     # cv2.imshow("example", out_im1)
     # cv2.waitKey()
     cv2.imwrite(out_fp, np.hstack((out_im1, out_im2)))
