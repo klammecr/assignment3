@@ -27,7 +27,7 @@ def normalize_pts(pts):
     pts_T = T @ np.hstack((pts, np.ones((pts.shape[0], 1)))).T
     return pts_T[:2].T, T
 
-def calc_F_eight(pts1, pts2, ransac_fn = None):
+def calc_F_eight(pts1, pts2):
     """
     Calculate fundamental matrix from correspondences.
     8 Point Algo
@@ -73,9 +73,9 @@ def calc_F_eight(pts1, pts2, ransac_fn = None):
     F_final /= F_final[-1, -1]
 
     # DEBUG: Should be close to 0
-    for p_prime, p in zip(pts2, pts1):
-        res = np.array([p_prime[0], p_prime[1], 1]) @ F_final @ np.array([p[0], p[1], 1])
-        print(res)
+    # for p_prime, p in zip(pts2, pts1):
+    #     res = np.array([p_prime[0], p_prime[1], 1]) @ F_final @ np.array([p[0], p[1], 1])
+    #     print(res)
 
     return F_final
 

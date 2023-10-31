@@ -7,7 +7,7 @@ import sympy
 # In House
 from q1a import normalize_pts, draw_epipolar_lines
 
-def calc_F_seven(pts1, pts2, ransac_fn = None):
+def calc_F_seven(pts1, pts2):
     # Step 1: Normalize Points
     pts1_norm, T1 = normalize_pts(pts1)
     pts2_norm, T2 = normalize_pts(pts2)
@@ -35,35 +35,38 @@ def calc_F_seven(pts1, pts2, ransac_fn = None):
     F2 /= F2[-1, -1]
 
     # Use sympy to solve
-    lambda_ = sympy.symbols('lambda')
-    F1_ = sympy.Matrix(F1)
-    F2_ = sympy.Matrix(F2)
-    expr = lambda_ * F1_ + (1 - lambda_) * F2_
-    equation = sympy.Eq(sympy.det(expr), 0)
-    soln = sympy.solve(equation, lambda_)
-    real_solns = [s for s in soln if s.is_real]
+    # lambda_ = sympy.symbols('lambda')
+    # F1_ = sympy.Matrix(F1)
+    # F2_ = sympy.Matrix(F2)
+    # expr = lambda_ * F1_ + (1 - lambda_) * F2_
+    # equation = sympy.Eq(sympy.det(expr), 0)
+    # soln = sympy.solve(equation, lambda_)
+    # accept_solns = [s.evalf() for s in soln]
+    # real_solns = [s.as_real_imag()[0] for s in accept_solns if abs(s.as_real_imag()[1]) < 1e-9]
+    
+    # # Find the real roots
+    # F_list = []
+    # for s in real_solns:
+    #     F = s* F1 + (1-s)*F2
+    #     F_final = T2.T @ F @ T1
+    #     F_final /= F_final[-1, -1]
+    #     F_list.append(F_final)
 
-    # Find the real roots
+    # Source:
+    # https://ela.kpi.ua/bitstream/123456789/50759/1/%2892-93%29_Monastyrskyi.pdf
+    constant = np.linalg.det(F1)
+    linear = np.linalg.det(F1)*np.trace(F2*np.linalg.inv(F1))
+    quadratic = np.linalg.det(F2)*np.trace(F1*np.linalg.inv(F2))
+    cubic = np.linalg.det(F2)
+
+    soln = np.roots(np.array([cubic, quadratic, linear, constant]))
+    real_solns = soln[~np.iscomplex(soln)]
     F_list = []
-    for s in real_solns:
-        F = s* F1 + (1-s)*F2
+    for real_soln in real_solns:
+        F = F1 + real_soln.real*F2
         F_final = T2.T @ F @ T1
         F_final /= F_final[-1, -1]
         F_list.append(F_final)
-
-    # NOTE: I failed to solve analytically, revisit later
-    # The right and left null space are F1 and F2
-    # Then, find the roots using a solver to get 1 or 3 solutions
-    # poly_F1 = F1[0,0]*F1[1,1]*F1[2,2]  - F1[0,0]*F1[1,2]*F1[2,1] \
-    #           -F1[0,1]*F1[0,0]*F1[2,2] + F1[0,1]*F1[0,2]*F1[2,0] \
-    #           +F1[0,2]*F1[1,0]*F1[2,1] - F1[0,2]*F1[1,1]*F1[2,0]
-    # poly_F2 = F2[0,0]*F2[1,1]*F2[2,2] - F2[0,0]*F2[1,2]*F2[2,1] \
-    #          -F2[0,1]*F2[0,0]*F2[2,2] + F2[0,1]*F2[0,2]*F2[2,0] \
-    #          +F2[0,2]*F2[1,0]*F2[2,1] - F2[0,2]*F2[1,1]*F2[2,0]       
-    # det_F1 = np.linalg.det(F1) 
-    # det_F2 = np.linalg.det(F2)
-    # p = np.array([poly_F1-poly_F2, 0, 0, det_F2])
-    # soln = np.roots(p)
 
     # Only return the real solutions
     # If we have RANSAC, we can find the best solution

@@ -6,9 +6,10 @@ authors = ["Chris Klammer <cklammer@andrew.cmu.edu>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 opencv-python = "^4.8.1.78"
 sympy = "^1.12"
+matplotlib = "^3.8.0"
 
 
 [build-system]
