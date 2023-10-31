@@ -9,8 +9,7 @@ from copy import deepcopy
 
 def compute_T_norm(pts):
     x0, y0 = np.mean(pts, axis = 0)
-    d_avg = np.mean(((pts[:, 0] - x0)**2 + (pts[:, 1] - y0)**2)**0.5)
-    s = (2**0.5) * d_avg
+    s = np.sqrt(2)/np.mean(np.sqrt((pts[:, 0] - x0)**2 + (pts[:, 1] - y0)**2))
     T = np.array([
         [s, 0, -s*x0],
         [0, s, -s*y0],
@@ -28,7 +27,7 @@ def normalize_pts(pts):
     pts_T = T @ np.hstack((pts, np.ones((pts.shape[0], 1)))).T
     return pts_T[:2].T, T
 
-def calc_F_eight(pts1, pts2):
+def calc_F_eight(pts1, pts2, ransac_fn = None):
     """
     Calculate fundamental matrix from correspondences.
     8 Point Algo
@@ -45,6 +44,7 @@ def calc_F_eight(pts1, pts2):
     pts1_norm, T1 = normalize_pts(pts1)
     pts2_norm, T2 = normalize_pts(pts2)
     for p_prime, p in zip(pts2_norm, pts1_norm):
+    #for p, p_prime in zip(pts1,pts2):
         A[i, 0] = p_prime[0] * p[0]
         A[i, 1] = p_prime[0] * p[1]
         A[i, 2] = p_prime[0]
@@ -73,9 +73,9 @@ def calc_F_eight(pts1, pts2):
     F_final /= F_final[-1, -1]
 
     # DEBUG: Should be close to 0
-    # for p_prime, p in zip(pts2, pts1):
-    #     res = np.array([p_prime[0], p_prime[1], 1]) @ F_final @ np.array([p[0], p[1], 1])
-    #     print(res)
+    for p_prime, p in zip(pts2, pts1):
+        res = np.array([p_prime[0], p_prime[1], 1]) @ F_final @ np.array([p[0], p[1], 1])
+        print(res)
 
     return F_final
 
@@ -120,6 +120,8 @@ def draw_epipolar_lines(img1, img2, F, pts1, pts2, out_fp, show_lines=False):
         # Coeff calculation for line
         if show_lines:
             a,b,c = l_prime
+            if b == 0:
+                raise ValueError("Division by 0")
             x1 = 0
             y1 = (a*p_prime[0] + b*p_prime[1])/b
             x2 = w2
