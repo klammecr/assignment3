@@ -98,7 +98,12 @@ def draw_epipolar_lines(img1, img2, F, pts1, pts2, out_fp, show_lines=False):
 
     h1, w1, _ = img1.shape
     h2, w2, _ = img2.shape
+
     for p, p_prime in zip(pts1, pts2):
+        # Eearly exit
+        if i == 10:
+            break
+
         # Get color
         color = (int(colors[i][0]), int(colors[i][1]), int(colors[i][2]))
 
@@ -109,16 +114,17 @@ def draw_epipolar_lines(img1, img2, F, pts1, pts2, out_fp, show_lines=False):
         l      /= l[-1]
 
         # Put point p_i and corresponding epipolar line l_i
-        cv2.circle(out_im1, center=tuple(p.astype("int")), radius=5, thickness=-1, color = color)
-        cv2.circle(out_im2, center=tuple(p_prime.astype("int")), radius=5, thickness=-1, color=color)
+        cv2.circle(out_im1, center=tuple(p.astype("int")), radius=7, thickness=-1, color = color)
+        cv2.circle(out_im2, center=tuple(p_prime.astype("int")), radius=7, thickness=-1, color=color)
 
         # Coeff calculation for line
         if show_lines:
-            lower_l_s  = int(-p_prime[0]/l_prime[0])
-            higher_l_s = int((w2-1-p_prime[0]) /l_prime[0])
-            lower_y_val  = int(p_prime[1] + lower_l_s*l_prime[1])
-            higher_y_val = int(p_prime[1] + higher_l_s*l_prime[1])
-            cv2.line(out_im2, (0, lower_y_val), (w1-1, higher_y_val), color = color, thickness=2)
+            a,b,c = l_prime
+            x1 = 0
+            y1 = (a*p_prime[0] + b*p_prime[1])/b
+            x2 = w2
+            y2 = (a*p_prime[0] + b*p_prime[1] - a*x2)/b
+            cv2.line(out_im2, (int(x1), int(y1)), (int(x2), int(y2)), color = color, thickness=5)
 
         # Increment counter
         i+=1
@@ -155,7 +161,7 @@ def main(img1_file, img2_file, intr, corr, out_dir):
     np.savetxt(f"{out_dir}/E.txt", E)
 
     # Draw the epipoilar lines
-    draw_epipolar_lines(img1, img2, F_eight, pts1[:10], pts2[:10], f"{out_dir}/F_epipolar_eight_pt.png", show_lines=True)
+    draw_epipolar_lines(img1, img2, F_eight, pts1, pts2, f"{out_dir}/F_epipolar_eight_pt.png", show_lines=True)
 
 # Entrypoint
 if __name__ == "__main__":
