@@ -96,7 +96,18 @@ def main(img1, img2, P1, P2, pts1, pts2):
 
     # Display the colorized point cloud
     import open3d as o3d
-    pcd = o3d.geometry.PointCloud
+    pcd = o3d.geometry.PointCloud()
+    x_tildes = np.vstack(pts3d)[:, :3]
+    colors = np.vstack(colors)/255.
+    colors_rgb = np.zeros_like(colors)
+    colors_rgb[:, 0] = colors[:, 2]
+    colors_rgb[:, 1] = colors[:, 1]
+    colors_rgb[:, 2] = colors[:, 0]
+
+    # Create a visualization window and add the point cloud
+    pcd.points = o3d.utility.Vector3dVector(x_tildes)
+    pcd.colors = o3d.utility.Vector3dVector(colors_rgb)
+    o3d.visualization.draw_geometries([pcd])
 
 
 if __name__ == "__main__":
